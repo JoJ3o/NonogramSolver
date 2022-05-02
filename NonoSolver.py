@@ -28,15 +28,13 @@ def isGuarantee(clue):
 	return False
 
 def placeGuarantee(axis, index, clue):
-	pos = 0
-	for num in clue:
-		for i in range(num):
-			if axis == "xAxis":
-				map[pos + i][index - 1] = 1
-			if axis == "yAxis":
-				map[index - 1][pos + i] = 1
-		# +1 for empty cell between 2 blocks
-		pos += num + 1
+	seperators = [idx * 2 + num for idx, num in enumerate(clue[:-1])]
+	for i in range(size):
+		cellType = 1 if (not (i in seperators)) else 2
+		if axis == "xAxis":
+			map[i][index - 1] = cellType
+		elif axis == "yAxis":
+			map[index - 1][i] = cellType
 
 def isOverlap(clue):
 	if max(clue) > size/2:
@@ -50,7 +48,7 @@ def placeOverlap(axis, index, clue):
 	for i in range(overlap):
 		if axis == "xAxis":
 			map[pos + i][index - 1] = 1
-		if axis == "yAxis":
+		elif axis == "yAxis":
 			map[index - 1][pos + i] = 1
 
 for axisName, axisClues in clues.items():
