@@ -1,5 +1,5 @@
 size = 5
-clues = {"xAxis": {0 : [1], 1: [1], 2: [3], 3: [2, 1], 4: [1, 2]}, "yAxis": {0: [1, 3], 1: [2], 2: [3], 3: [2], 4: [2, 1]}}
+clues = {"xAxis": {0 : [1], 1: [2, 2], 2: [2, 2], 3: [1], 4: [1]}, "yAxis": {0: [3], 1: [2], 2: [1], 3: [2], 4: [2, 1]}}
 map = []
 for x in range(size):
 	map.append([])
@@ -17,8 +17,6 @@ for x in range(size):
 #     map["yAxis"].append(rowItems)
 
 def placeGuarantee(axis, index, clue):
-	if sum(clue) + (len(clue) - 1) == size: return
-
 	seperators = [idx * 2 + num for idx, num in enumerate(clue[:-1])]
 	for i in range(size):
 		cellType = 1 if (not (i in seperators)) else 2
@@ -26,11 +24,9 @@ def placeGuarantee(axis, index, clue):
 			map[i][index] = cellType
 		elif axis == "yAxis":
 			map[index][i] = cellType
-	clues[axis][index].clear()
+	clues[axis][index] = [-(num) for num in clues[axis][index]]
 
 def placeOverlap(axis, index, clue):
-	if max(clue) <= size/2: return
-	
 	pos = size - max(clue)
 	overlap = int((max(clue) - size/2) * 2)
 	for i in range(overlap):
@@ -63,6 +59,26 @@ def placeEdge(axis, index, clue):
 						map[index][-(i+1)] = 1
 					map[index][-(clue[-1] + 1)] = 2
 
+def getBlocks(line):
+	leftBounds = [idx for idx, num in enumerate(line) if num == 1 and (idx == 0 or line[idx - 1] != 1)]
+	rightBounds = [idx for idx, num in enumerate(line) if num == 1 and (idx == len(line) - 1 or line[idx + 1] != 1)]
+	blocks = [(left, (right - left) + 1) for left, right in zip(leftBounds, rightBounds)]
+	return blocks
+
+def getRegions(line):
+	leftBounds = [idx for idx, num in enumerate(line) if idx == 0 or line[idx - 1] == 2]
+	rightBounds = [idx for idx, num in enumerate(line) if idx == len(line) - 1 or line[idx + 1] == 2]
+	regions = [(left, (right - left) + 1) for left, right in zip(leftBounds, rightBounds)]
+	return regions
+
+# def completeClue(axis, index, clue):
+# 	if axis == "yAxis":
+# 		blocks = getBlocks(map[index])
+# 		regions = getRegions(map[index])
+# 		regionsBeforeBlock = 
+# 		if clue[0] == blocks[0][1] and (regions[0])
+
+
 def printMap(axis, index, clue):
 	print("\n")
 	print(axis + ":", index + 1, clue)
@@ -71,30 +87,23 @@ def printMap(axis, index, clue):
 
 for axisName, axisClues in clues.items():
 	for index, clue in axisClues.items():
-		placeGuarantee(axisName, index, clue)
-		placeOverlap(axisName, index, clue)
-		
-		if not clue:
-			continue
-		placeEdge(axisName, index, clue)
-		printMap(axisName, index, clue)
-
-for axisName, axisClues in clues.items():
-	for index, clue in axisClues.items():
-		if not clue:
-			continue
-		placeEdge(axisName, index, clue)
+		if sum(clue) + (len(clue) - 1) == size:
+			placeGuarantee(axisName, index, clue)
+		elif max(clue) > size/2:
+			placeOverlap(axisName, index, clue)
 		printMap(axisName, index, clue)
 
 while any([not all(row) for row in map]):
 	oldMap = map
 
-
+	for axisName, axisClues in clues.items():
+		for index, clue in axisClues.items():
+			if all(True if num < 0 else False for num in clue):
+				continue
+			completeClue(axisName, index, clue)
+			# placeEdge(axisName, index, clue)
+			printMap(axisName, index, clue)
 
 	if map == oldMap:
 		print("Error: looploop")
 		break
-        
-
-
-
